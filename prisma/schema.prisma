@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,42 +7,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Project {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String
-  deadline     String
-  priority     Int
-  concluded    Boolean
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model project {
+  concluded    Boolean        @db.Bit(1)
+  id           Int            @id @default(autoincrement())
+  priority     Int            @db.TinyInt
   user_id      Int
-  user         UserAccount   @relation(references: [id], fields: [user_id])
-  projectTasks ProjectTask[]
+  deadline     DateTime       @db.DateTime(6)
+  description  String         @db.VarChar(255)
+  title        String         @db.VarChar(255)
+  user_account user_account   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKbidpv6vwf9559nbfojuod6i63")
+  project_task project_task[] @relation(map: "projectTask")
+
+  @@index([user_id], map: "FKbidpv6vwf9559nbfojuod6i63")
 }
 
-model UserAccount {
-  id       Int       @id @default(autoincrement())
-  name     String
-  email    String    @unique
-  password String
-  projects Project[]
-  todos    Todo[]
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model project_seq {
+  next_val BigInt?
+
+  @@ignore
 }
 
-model ProjectTask {
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model project_task {
+  completed  Boolean @db.Bit(1)
   id         Int     @id @default(autoincrement())
-  title      String
-  priority   Int
-  completed  Boolean
+  priority   Int     @db.TinyInt
   project_id Int
-  Project    Project @relation(fields: [project_id], references: [id])
+  title      String  @db.VarChar(255)
+  project    project @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKoki9jr57ykahgi2wve418pxvi")
+
+  @@index([project_id], map: "FKoki9jr57ykahgi2wve418pxvi")
 }
 
-model Todo {
-  id            Int         @id @default(autoincrement())
-  text          String
-  concluded     Boolean
-  deadline      String
-  priority      Int
-  userAccountId Int
-  user          UserAccount @relation(references: [id], fields: [userAccountId])
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model project_task_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model todo {
+  concluded    Boolean      @db.Bit(1)
+  id           Int          @id @default(autoincrement())
+  priority     Int          @db.TinyInt
+  user_id      Int          
+  deadline     DateTime     @db.DateTime(6)
+  text         String       @db.VarChar(255)
+  user_account user_account @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKr5ms4ob4ovkrcshaffvpuadmq") 
+
+  @@index([user_id], map: "FKr5ms4ob4ovkrcshaffvpuadmq")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model todo_seq {
+  next_val BigInt?
+
+  @@ignore
+}
+
+model user_account {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique(map: "UK_hl02wv5hym99ys465woijmfib") @db.VarChar(255)
+  name     String    @db.VarChar(255)
+  password String    @db.VarChar(255)
+  project  project[]
+  todo     todo[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model user_account_seq {
+  next_val BigInt?
+
+  @@ignore
 }
