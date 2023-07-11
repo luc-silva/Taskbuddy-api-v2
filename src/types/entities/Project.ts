@@ -4,7 +4,7 @@ interface Project {
   description: string;
   deadline: string;
   concluded: boolean;
-  user: UserAccount
+  user: UserAccount;
   projectTasks: ProjectTask[];
   priority: number;
 }
